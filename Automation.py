@@ -1,5 +1,6 @@
 import datetime
 
+from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from openpyxl import *
@@ -28,6 +29,11 @@ for website in websites:
     last_purchases_24hr = driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[2]/div/div[3]/div/div[1]/div[3]/div/div[2]/div/div[1]/table/tbody/tr[4]/td/span').text
     current_value = driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div[1]/div/span').text
     growth = driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div[1]/span').text
+    profit_loss_growth = driver.find_element_by_xpath(
+        '//*[@id="__next"]/div/div[1]/div[2]/div/div[3]/div/div[1]/div[3]/div/div[2]/div/div[1]/table/tbody/tr[2]/td/span').text
+
+    if profit_loss_growth[2] == '-':
+        growth = '-' + growth
 
     new_current_value = current_value[2:]
 

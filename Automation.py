@@ -1,14 +1,17 @@
 import datetime
+import time
 
+from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from openpyxl import *
 
 wb = load_workbook('Data Base.xlsx')
 sheet = wb['Criptos']
 
-driver = webdriver.Chrome(r'chromedriver.exe')
+driver = webdriver.Chrome(ChromeDriverManager().install())
 
 websites = ['https://coinmarketcap.com/pt-br/currencies/shiba-inu/',
             'https://coinmarketcap.com/pt-br/currencies/tether/',
@@ -25,40 +28,46 @@ pont = ''
 for website in websites:
     driver.get(website)
 
-    crypto = driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[2]/div/div[1]/div[2]/div/div[1]/div[1]/h2/small').text
-    last_purchases_24hr = driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[2]/div/div[3]/div/div[1]/div[3]/div/div[2]/div/div[1]/table/tbody/tr[4]/td/span').text
-    current_value = driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div[1]/div/span').text
-    growth = driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div[1]/span').text
-    profit_loss_growth = driver.find_element_by_xpath(
-        '//*[@id="__next"]/div/div[1]/div[2]/div/div[3]/div/div[1]/div[3]/div/div[2]/div/div[1]/table/tbody/tr[2]/td/span').text
+    try:
+        crypto = driver.find_element(By.XPATH, '//*[@id="__next"]/div/div[1]/div[2]/div/div[1]/div[2]/div/div[1]/div[1]/h2/small').text
+        current_value = driver.find_element(By.XPATH, '//*[@id="__next"]/div/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div[1]/div/span').text
+        growth = driver.find_element(By.XPATH,'//*[@id="__next"]/div/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div[1]/span').text
+        last_purchases_24hr = driver.find_element(By.XPATH, '//*[@id="__next"]/div/div[1]/div[2]/div/div[3]/div/div[1]/div[3]/div/div[3]/div/div[1]/table/tbody/tr[4]/td/span').text
+        profit_loss_growth = driver.find_element(By.XPATH, '//*[@id="__next"]/div/div[1]/div[2]/div/div[3]/div/div[1]/div[3]/div/div[3]/div/div[1]/table/tbody/tr[2]/td/span').text
 
-    if profit_loss_growth[2] == '-':
-        growth = '-' + growth
-
-    new_current_value = current_value[2:]
-
-    if '.' in new_current_value[-3:]:
-        pont = new_current_value[-3:]
-        pont = pont.replace('.', ',')
+        print(crypto, current_value, growth, last_purchases_24hr, profit_loss_growth)
+    except:
+        cell += 1
     else:
-        pont = new_current_value[-3:]
+        if profit_loss_growth[2] == '-':
+            growth = '-' + growth
 
-    if ',' in new_current_value[:-3]:
-        comma = new_current_value[:-3]
-        comma = comma.replace(',', '.')
-    else:
-        comma = new_current_value[:-3]
+        new_current_value = current_value[2:]
 
-    if int(new_current_value[0]) == 0:
-        current_value = new_current_value.replace('.', ',')
-    else:
-        current_value = comma + pont
+        if '.' in new_current_value[-3:]:
+            pont = new_current_value[-3:]
+            pont = pont.replace('.', ',')
+        else:
+            pont = new_current_value[-3:]
 
-    sheet[f'A{cell}'] = crypto
-    sheet[f'D{cell}'] = current_value
-    sheet[f'G{cell}'] = growth
-    sheet[f'J{cell}'] = last_purchases_24hr
+        if ',' in new_current_value[:-3]:
+            comma = new_current_value[:-3]
+            comma = comma.replace(',', '.')
+        else:
+            comma = new_current_value[:-3]
 
-    wb.save(f'Data Base - {datetime.date.today()}.xlsx')
+        if int(new_current_value[0]) == 0:
+            current_value = new_current_value.replace('.', ',')
+        else:
+            current_value = comma + pont
 
-    cell += 1
+        sheet[f'A{cell}'] = crypto
+        sheet[f'D{cell}'] = current_value
+        sheet[f'G{cell}'] = growth
+        sheet[f'J{cell}'] = last_purchases_24hr
+
+        wb.save(f'Data Base - {datetime.date.today()}.xlsx')
+
+        cell += 1
+
+
